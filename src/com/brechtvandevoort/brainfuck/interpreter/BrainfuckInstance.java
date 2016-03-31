@@ -4,6 +4,9 @@ import java.util.Observable;
 import java.util.concurrent.*;
 
 /**
+ * Data instance of a Brainfuck program.
+ * It contains the value of each cell and the current position of the pointer.
+ *
  * Created by brecht on 23/03/2016.
  */
 public class BrainfuckInstance extends Observable {
@@ -15,6 +18,7 @@ public class BrainfuckInstance extends Observable {
 
     private BlockingQueue<Byte> _inputStream;
     private BlockingQueue<Byte> _outputStream;
+    private String _completeOutput;
 
     public BrainfuckInstance() {
         _bytes = new byte[DATA_BYTES_SIZE];
@@ -22,6 +26,7 @@ public class BrainfuckInstance extends Observable {
         _usedRange = 0;
         _inputStream = new LinkedBlockingQueue<>();
         _outputStream = new LinkedBlockingQueue<>();
+        _completeOutput = "";
     }
 
     public void incrementPointer() {
@@ -107,10 +112,15 @@ public class BrainfuckInstance extends Observable {
     public void writeOutput() {
         try {
             _outputStream.put(_bytes[_pointer]);
+            _completeOutput += (char)_bytes[_pointer];
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         setChanged();
         notifyObservers();
+    }
+
+    public String getCompleteOutput() {
+        return _completeOutput;
     }
 }

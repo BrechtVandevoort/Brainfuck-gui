@@ -27,3 +27,8 @@
     -fx-pref-width: 8em;
     -fx-margin: 1em;
 }
+
+.outputText {
+    -fx-background-color: white;
+    -fx-fill-color: red;
+}

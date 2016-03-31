@@ -19,6 +19,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 /**
+ * GUI for editing and executing a Brainfuck program.
+ *
  * Created by brecht on 27/03/2016.
  */
 public class BrainfuckGUI extends Application implements Observer {
@@ -34,8 +36,10 @@ public class BrainfuckGUI extends Application implements Observer {
     private VBox _vBoxButtons;
     private Button _executeButton;
     private Button _stepButton;
+    private CodeArea _console;
 
     private static final int MIN_NUM_CELLS = 20;
+    private static final int DEFAULT_EXECUTION_INTERVAL = 50;
 
     public static void main(String[] args) {
         launch(args);
@@ -74,6 +78,7 @@ public class BrainfuckGUI extends Application implements Observer {
         initCells();
         initCodeArea();
         initButtons();
+        initConsole();
         initGridPane();
         initScene();
     }
@@ -124,6 +129,12 @@ public class BrainfuckGUI extends Application implements Observer {
         _vBoxButtons.getChildren().addAll(_executeButton, _stepButton);
     }
 
+    private void initConsole() {
+        _console = new CodeArea();
+        _console.setEditable(false);
+
+    }
+
     private void initGridPane() {
         ColumnConstraints column1 = new ColumnConstraints();
         //column1.setPercentWidth(80);
@@ -144,6 +155,7 @@ public class BrainfuckGUI extends Application implements Observer {
         _gridPane.add(_vBoxButtons, 1, 0, 1,2);
         _gridPane.add(_scrollPaneCells, 0, 0);
         _gridPane.add(_codeArea, 0, 1);
+        _gridPane.add(_console, 0, 2, 2, 1);
     }
 
     private void initScene() {
@@ -156,13 +168,21 @@ public class BrainfuckGUI extends Application implements Observer {
     private void executeProgram() {
         _brainfuckEngine = new BrainfuckEngine(_codeArea.getText());
         _brainfuckEngine.getBrainfuckInstance().addObserver(this);
-        _brainfuckEngine.setExecutionInterval(100);
+        _brainfuckEngine.setExecutionInterval(DEFAULT_EXECUTION_INTERVAL);
+
+        _console.appendText("--Executing--\n");
 
         Thread t = new Thread() {
             @Override
             public void run() {
                 _brainfuckEngine.execute();
                 System.out.println(_brainfuckEngine.getBrainfuckInstance().emptyOutputStream());
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        _console.appendText("--Done--\n");
+                    }
+                });
             }
         };
 
@@ -193,5 +213,9 @@ public class BrainfuckGUI extends Application implements Observer {
             _codeArea.setEditable(true);
         }
         _codeArea.positionCaret(instruction+1);
+
+        while(instance.hasOutput()) {
+            _console.appendText("" + (char)instance.readFromOutputStream());
+        }
     }
 }
